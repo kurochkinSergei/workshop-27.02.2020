@@ -6,6 +6,9 @@ class User {
     this.lastName = lastName;  
   }
 
+  ip(args, context) {
+    return context.toString();
+  }
   friends() {
     return [
       new User({ firstName: `${this.firstName} - friend 1`}),
@@ -26,8 +29,6 @@ const schema = buildSchema(`
   }
 `);
 
-// console.log('schema', schema);
-
 rootValue = {
   user: {
     firstName: () => {
@@ -36,13 +37,29 @@ rootValue = {
     lastName: () => {
       return 'Lupa';
     },
-    friends: async () => [new User({firstName: 'Poruchik'}), new User({ firstName: 'Pet\'ka'})]
+    friends: async () => [
+      new User({firstName: 'Poruchik'}),
+      new User({ firstName: 'Pet\'ka'}),
+    ]
   }
 }
 
-source = '{user { firstName, friends { firstName, friends { firstName } }}}'
+source = `{
+  user {
+    ip,
+    firstName,
+    friends {
+      ip,
+      firstName,
+      friends {
+        ip,
+        firstName
+      }
+    }
+  }
+}`
 
-graphql({ schema, rootValue, source}).then(({data, errors}) => {
+graphql({ schema, rootValue, source, context}).then(({data, errors}) => {
   console.log('DATA::', '\n', JSON.stringify(data, null, 2), '\n');
   console.log('ERRORS::', '\n', JSON.stringify(errors, null, 2));
 });
